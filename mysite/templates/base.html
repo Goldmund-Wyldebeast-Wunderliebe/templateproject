@@ -1,0 +1,87 @@
+{% load cms_tags menu_tags sekizai_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block 'head_title' %}{% page_attribute "page_title" %}{% endblock %}</title>
+
+    <!-- Bootstrap -->
+    <link href="/static/bootstrap-3.1.1-dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    {% render_block "css" %}
+    {% block 'head_end_insertion_point' %}{% endblock %}
+  </head>
+
+  <body>
+    {% cms_toolbar %}
+    {% block 'body_start_insertion_point' %}{% endblock %}
+
+    <!-- Fixed navbar -->
+    <div class="navbar navbar-default" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="/">mysite</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            {% show_menu 0 100 0 1 %}
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+    <div class="container">
+
+      <div id="breadcrumb">
+        {% block 'breadcrumb' %}{% endblock %}
+      </div>
+
+      {% block 'messages' %}
+      {% if messages %}
+      <div id="messages">
+        <ul class="messages">
+          {% for message in messages %}
+          <li class="message {{ message.tags }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+      {% endblock %}
+
+      <div id="main">
+        {% block 'main' %}
+        <div class="row-fluid">
+          <div class="span12">
+            <h1 id="page-title">{% page_attribute "page_title" %}</h1>
+            {% placeholder base_content %}
+          </div>
+        </div>
+        {% block base_content %}
+        {% endblock %}
+        {% endblock %}
+      </div>
+
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="/static/bootstrap-3.1.1-dist/js/bootstrap.min.js"></script>
+    <script src="/static/js/mysite.js"></script>
+    {% render_block "js" %}
+    {% block 'body_end_insertion_point' %}{% endblock %}
+  </body>
+</html>

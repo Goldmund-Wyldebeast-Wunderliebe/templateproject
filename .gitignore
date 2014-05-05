@@ -1,0 +1,16 @@
+*.log
+*.mo
+*.pyc
+*.py~
+*.swp
+/settings/__init__.py
+/include/
+/bin/
+/lib/
+/var/
+/man/
+/src/
+/ssl/
+/local/
+/static/
+/media/

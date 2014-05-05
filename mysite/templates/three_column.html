@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load cms_tags %}
+
+{% block base_content %}
+  <div class="row-fluid">
+    <div class="span4">
+      {% placeholder column_1 %}
+    </div>
+    <div class="span4">
+      {% placeholder column_2 %}
+    </div>
+    <div class="span4">
+      {% placeholder column_3 %}
+    </div>
+  </div>
+{% endblock %}
+
