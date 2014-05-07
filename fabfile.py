@@ -2,7 +2,8 @@ import os
 import sys
 import git
 
-from fabric.api import env, run
+from fabric.api import env, run, put
+from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils.importlib import import_module
 
@@ -17,7 +18,7 @@ def dev():
     pick_settings('dev')
 
 
-def deploy(layer, branch=None):
+def deploy(layer='tst', branch=None):
     print 'deploying to {0}'.format(layer)
     env.layer = layer
 
@@ -26,6 +27,7 @@ def deploy(layer, branch=None):
     deployment_config = import_module(deployment_module)
     env.branch = branch or deployment_config.branch
     env.host_string = deployment_config.deployhost
+    env.homedir = deployment_config.homedir
     env.sitename = deployment_config.sitename
     env.projectdir = deployment_config.projectdir
     env.tag = deployment_config.tag
@@ -41,6 +43,8 @@ def deploy(layer, branch=None):
         else
             git clone --branch=%(branch)s --single-branch \
                     %(source)s %(projectdir)s
+            cd %(projectdir)s
+            virtualenv .
         fi
         """ % env)
 
@@ -51,20 +55,41 @@ def deploy(layer, branch=None):
             git push origin %(tag)s
             """ % env)
 
+    make_conffile(env, 'nginx.conf', 'sites-enabled/' + env.sitename)
+
     run("""
         cd %(projectdir)s
-        virtualenv .
         . bin/activate
         pip install -r requirements.txt
         fab pick_settings:layer=%(layer)s
-
         mkdir -p var/log var/run
         python manage.py collectstatic --noinput
+        """ % env)
+
+    run("""
+        cd %(projectdir)s
+        . bin/activate
         python manage.py syncdb --noinput
         python manage.py migrate
-        if [ ! -f var/run/supervisord.sock ]
+        if [ ! -S var/run/supervisord.sock ]
         then supervisord
         else supervisorctl reload
         fi
         """ % env)
+
+
+def make_conffile(env, src, tgt):
+    tmpdir = 'tmp'
+    deployment_templates = os.path.join(
+            os.path.dirname(__file__), 'deployment', 'templates')
+    settings.configure(TEMPLATE_DIRS=(deployment_templates,))
+    tmpfile = os.path.join(tmpdir, tgt)
+    d = os.path.dirname(tmpfile)
+    if not os.path.isdir(d):
+        os.makedirs(d)
+    with open(tmpfile, 'wb') as fh:
+        os.chmod(tmpfile, 0644)
+        fh.write(render_to_string(src, env))
+    put(tmpfile, tgt)
+
 
