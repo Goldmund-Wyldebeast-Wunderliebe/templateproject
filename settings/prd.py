@@ -1,3 +1,3 @@
 from .base import *
 
-DATABASES['default']['NAME'] = 'mysite_prd'
+read_pgpass('app-mysite_prd')

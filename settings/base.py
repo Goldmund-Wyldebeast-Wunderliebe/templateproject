@@ -6,15 +6,28 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_URL = '/media/'
 STATIC_URL = '/static/'
 
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.path.join(BASE_DIR, 'mysite'),
-        'USER': 'mysite_owner',
-        'PASSWORD': 'aiDPem0ls5MemTtuT3PB/CTYPu4',
-        'HOST': 'localhost',
+        'NAME': None,
+        'USER': None,
+        'PASSWORD': None,
+        'HOST': None,
     }
 }
+
+def read_pgpass(dbname):
+    import os
+    pgpass = os.path.join(os.environ['HOME'], '.pgpass')
+    for line in open(pgpass).read().split():
+        words = line.strip().split(':')
+        if words[2]==dbname:
+            DATABASES['default']['NAME'] = words[2]
+            DATABASES['default']['USER'] = words[3]
+            DATABASES['default']['PASSWORD'] = words[4]
+            DATABASES['default']['HOST'] = words[0]
+
 
 SECURE_SSL_REDIRECT=True
 SECURE_FRAME_DENY=False

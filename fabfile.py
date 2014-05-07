@@ -8,6 +8,12 @@ from django.template.loader import render_to_string
 from django.utils.importlib import import_module
 
 
+env.forward_agent = True
+env.always_use_pty = False
+env.linewise = True
+env.shell = '/bin/dash -e -c'
+
+
 def pick_settings(layer):
     file = 'settings/__init__.py'
     with open(file, 'wb') as fh:
@@ -18,10 +24,8 @@ def dev():
     pick_settings('dev')
 
 
-def deploy(layer='tst', branch=None):
-    print 'deploying to {0}'.format(layer)
+def setup(layer, branch):
     env.layer = layer
-
     sys.path.append(os.getcwd())
     deployment_module = 'deployment.{0}'.format(env.layer)
     deployment_config = import_module(deployment_module)
@@ -32,7 +36,25 @@ def deploy(layer='tst', branch=None):
     env.projectdir = deployment_config.projectdir
     env.tag = deployment_config.tag
     env.source = git.Repo().remote().url
-    env.forward_agent = True
+
+
+def undeploy(layer='tst', branch=None):
+    setup(layer, branch)
+    print('undeploying %(sitename)s' % env)
+
+    run("""
+        cd %(projectdir)s
+        . bin/activate
+        supervisorctl shutdown
+        cd
+        rm -rf %(projectdir)s
+        rm sites-enabled/%(sitename)s
+        """ % env)
+
+
+def deploy(layer='tst', branch=None):
+    setup(layer, branch)
+    print('deploying %(branch)s to %(sitename)s' % env)
 
     run("""
         if [ -d %(projectdir)s ]
@@ -55,8 +77,6 @@ def deploy(layer='tst', branch=None):
             git push origin %(tag)s
             """ % env)
 
-    make_conffile(env, 'nginx.conf', 'sites-enabled/' + env.sitename)
-
     run("""
         cd %(projectdir)s
         . bin/activate
@@ -77,8 +97,11 @@ def deploy(layer='tst', branch=None):
         fi
         """ % env)
 
+    make_conffile('nginx.conf', 'sites-enabled/' + env.sitename)
+    run("sudo /etc/init.d/nginx reload")
 
-def make_conffile(env, src, tgt):
+
+def make_conffile(src, tgt):
     tmpdir = 'tmp'
     deployment_templates = os.path.join(
             os.path.dirname(__file__), 'deployment', 'templates')
