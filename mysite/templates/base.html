@@ -65,12 +65,8 @@
 
       <div id="main">
         {% block 'main' %}
-        <div class="row-fluid">
-          <div class="span12">
-            <h1 id="page-title">{% page_attribute "page_title" %}</h1>
-            {% placeholder base_content %}
-          </div>
-        </div>
+        <h1 id="page-title">{% page_attribute "page_title" %}</h1>
+        {% placeholder base_content %}
         {% block base_content %}
         {% endblock %}
         {% endblock %}
