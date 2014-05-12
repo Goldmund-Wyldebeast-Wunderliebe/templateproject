@@ -5,7 +5,9 @@ Template Project
 Installation
 ---
 
-The following series of commands will get you started::
+First, create a postgres database called `mysite_dev` and put it's
+credentials in $HOME/.pgpass, or edit settings/dev.py.
+After that, the following series of commands will get you started::
 
     git clone git@github.com:Goldmund-Wyldebeast-Wunderliebe/templateproject.git
     cd templateproject
