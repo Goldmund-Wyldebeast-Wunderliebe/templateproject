@@ -89,8 +89,8 @@ def deploy(layer='tst', branch=None):
     run("""
         cd %(projectdir)s
         . bin/activate
-        python manage.py syncdb --noinput
-        python manage.py migrate
+        python manage.py syncdb --noinput --all
+        python manage.py migrate --fake
         if [ ! -S var/run/supervisord.sock ]
         then supervisord
         else supervisorctl reload
