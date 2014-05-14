@@ -110,6 +110,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.static',
     'cms.context_processors.cms_settings',
     'sekizai.context_processors.sekizai',
+    'mysite.context_processors.site_imprint',
 )
 
 

@@ -26,3 +26,4 @@ LOGGING['loggers'] = {
         },
 }
 
+from .imprint import SITE_IMPRINT_DEV as SITE_IMPRINT

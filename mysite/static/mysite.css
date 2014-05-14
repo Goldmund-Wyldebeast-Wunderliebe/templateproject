@@ -1,0 +1,14 @@
+#site-imprint {
+	background: rgba(0, 0, 0, .2);
+	color: white;
+	position: fixed;
+	left: 0px;
+	right: 0px;
+	bottom: 0px;
+	padding: 0px 2px;
+	font-size: 12px;
+	text-align: center;
+}
+#site-imprint:hover {
+	background: rgba(0, 0, 0, .6);
+}
