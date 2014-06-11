@@ -31,12 +31,13 @@ def setup(layer, branch):
     deployment_config = import_module(deployment_module)
     env.branch = branch or deployment_config.branch
     env.host_string = deployment_config.deployhost
-    env.homedir = deployment_config.homedir
-    env.gunicorn_port = deployment_config.gunicorn_port
-    env.gunicorn_workers = deployment_config.gunicorn_workers
-    env.sitename = deployment_config.sitename
-    env.projectdir = deployment_config.projectdir
-    env.tag = deployment_config.tag
+    for element in [
+            'homedir', 'projectdir', 'tag', 'sitename',
+            'gunicorn_port', 'gunicorn_workers',
+            'webserver', 'serveradmin',
+            ]:
+        setattr(env, element, getattr(deployment_config, element, None))
+        print 'env.%s = %s' % (element, getattr(env, element))
     env.source = git.Repo().remote().url
 
 
@@ -120,10 +121,7 @@ def make_conffile(src, tgt):
     else:
         tgt = os.path.join(env.projectdir, tgt)
     tmpdir = 'tmp'
-    deployment_templates = os.path.join(
-            os.path.dirname(__file__), 'deployment', 'templates')
-    settings.configure(TEMPLATE_DIRS=(deployment_templates,))
-    tmpfile = os.path.join(tmpdir, tgt)
+    tmpfile = os.path.join(tmpdir, src)
     d = os.path.dirname(tmpfile)
     if not os.path.isdir(d):
         os.makedirs(d)
