@@ -7,6 +7,8 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils.importlib import import_module
 
+from deployment.config import deploy_config
+
 
 env.forward_agent = True
 env.always_use_pty = False
@@ -29,17 +31,18 @@ def dev():
 def setup(layer='tst', **kwargs):
     env.layer = layer
     sys.path.append(os.getcwd())
+    for k, v in kwargs.items():
+        setattr(deploy_config, k, v)
     deployment_module = 'deployment.{0}'.format(env.layer)
-    deployment_config = import_module(deployment_module)
-    env.host_string = deployment_config.deployhost
+    import_module(deployment_module)
+    env.host_string = deploy_config.deployhost
     for element in [
             'branch', 'tag', 'sitename',
             'homedir', 'projectdir',
             'gunicorn_port', 'gunicorn_workers',
             'webserver', 'serveradmin',
             ]:
-        value = kwargs.get(element, getattr(deployment_config, element, None))
-        setattr(env, element, value)
+        setattr(env, element, getattr(deploy_config, element, None))
     env.projectdir = os.path.join(env.homedir, env.projectdir)
     env.source = git.Repo().remote().url
 
