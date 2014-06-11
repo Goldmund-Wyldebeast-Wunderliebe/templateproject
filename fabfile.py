@@ -2,7 +2,7 @@ import os
 import sys
 import git
 
-from fabric.api import env, run, put
+from fabric.api import env, run, put, task
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils.importlib import import_module
@@ -14,49 +14,74 @@ env.linewise = True
 env.shell = '/bin/dash -e -c'
 
 
+@task
 def pick_settings(layer):
     file = 'settings/__init__.py'
     with open(file, 'wb') as fh:
         fh.write('from .%s import *\n' % layer)
 
 # shorthand for fab pick_settings:layer=dev
+@task
 def dev():
     pick_settings('dev')
 
 
-def setup(layer, branch):
+def setup(layer='tst', **kwargs):
     env.layer = layer
     sys.path.append(os.getcwd())
     deployment_module = 'deployment.{0}'.format(env.layer)
     deployment_config = import_module(deployment_module)
-    env.branch = branch or deployment_config.branch
     env.host_string = deployment_config.deployhost
     for element in [
-            'homedir', 'projectdir', 'tag', 'sitename',
+            'branch', 'tag', 'sitename',
+            'homedir', 'projectdir',
             'gunicorn_port', 'gunicorn_workers',
             'webserver', 'serveradmin',
             ]:
-        setattr(env, element, getattr(deployment_config, element, None))
+        value = kwargs.get(element, getattr(deployment_config, element, None))
+        setattr(env, element, value)
+    env.projectdir = os.path.join(env.homedir, env.projectdir)
     env.source = git.Repo().remote().url
 
 
-def undeploy(layer='tst', branch=None):
-    setup(layer, branch)
-    print('undeploying %(sitename)s' % env)
+@task
+def shutdown(unlink=False, remove=False, **kwargs):
+    setup(**kwargs)
 
+    sites_enabled_link = run("""
+        readlink sites-enabled/%(sitename)s
+        """ % env, warn_only=True)
+    is_linked = sites_enabled_link.startswith(os.path.join(env.projectdir, ''))
+    if unlink and not is_linked:
+        print("Not unlinking %(sitename)s.  It's not there" % env)
+        return
+    elif not unlink and is_linked:
+        print("Not shutting down %(sitename)s.  Unlink first" % env)
+        return
+    elif unlink and is_linked:
+        print("unlinking %(sitename)s" % env)
+        run("""
+            rm -f %(homedir)s/sites-enabled/%(sitename)s
+            sudo /etc/init.d/%(webserver)s reload
+        """ % env)
+
+    print("shutting down %(sitename)s" % env)
     run("""
         cd %(projectdir)s
         . bin/activate
         supervisorctl shutdown
-        cd
-        rm -rf %(projectdir)s
-        rm sites-enabled/%(sitename)s
         """ % env)
 
+    if remove:
+        print("removing down %(sitename)s" % env)
+        run("""
+            rm -rf %(projectdir)s
+            """ % env)
 
-def deploy(layer='tst', branch=None):
-    setup(layer, branch)
-    print('deploying %(branch)s to %(sitename)s' % env)
+@task
+def deploy(**kwargs):
+    setup(**kwargs)
+    print("deploying %(branch)s to %(sitename)s" % env)
 
     run("""
         if [ -d %(projectdir)s ]
@@ -104,12 +129,16 @@ def deploy(layer='tst', branch=None):
     settings.configure(TEMPLATE_DIRS=(deployment_templates,))
 
     make_conffile('gunicorn.conf', 'etc/')
-    if env.webserver == 'nginx':
-        make_conffile('nginx.conf', '~/sites-enabled/' + env.sitename)
-        run("sudo /etc/init.d/nginx reload")
-    elif env.webserver == 'apache':
-        make_conffile('apache2.conf', '~/sites-enabled/' + env.sitename)
-        run("sudo /etc/init.d/apache2 reload")
+    make_conffile('nginx.conf', 'etc/')
+    make_conffile('apache2.conf', 'etc/')
+
+    if env.webserver in ['nginx', 'apache2']:
+        run("""
+            rm -f %(homedir)s/sites-enabled/%(sitename)s
+            ln -s %(projectdir)s/etc/%(webserver)s.conf \
+                    %(homedir)s/sites-enabled/%(sitename)s
+            sudo /etc/init.d/%(webserver)s reload
+        """ % env)
 
 
 def make_conffile(src, tgt):
