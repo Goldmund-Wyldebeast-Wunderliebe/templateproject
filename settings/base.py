@@ -29,10 +29,10 @@ def read_pgpass(dbname):
     else:
         for line in pgpass_lines:
             words = line.strip().split(':')
-            if words[2]==dbname:
+            if words[2] in (dbname, '*'):
                 return {
                     'ENGINE': 'django.db.backends.postgresql_psycopg2',
-                    'NAME': words[2],
+                    'NAME': dbname,
                     'USER': words[3],
                     'PASSWORD': words[4],
                     'HOST': words[0],
