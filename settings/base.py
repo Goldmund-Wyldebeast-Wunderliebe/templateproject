@@ -45,7 +45,7 @@ def read_pgpass(dbname):
         To switch to a PostgreSQL database, add a line to the ~/.pgpass file
         containing it's credentials.
         See http://www.postgresql.org/docs/9.3/static/libpq-pgpass.html
-        """
+        """ % dbname
     return {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'var', 'mysite.db'),
