@@ -85,10 +85,10 @@ INSTALLED_APPS = (
     'mptt',
     'menus',
     'sekizai',
-    'djangocms_link',
     'djangocms_text_ckeditor',  # note this needs to be above the 'cms' entry
     'cms',
     #'cms.plugins.text',
+    'djangocms_link',
     'djangocms_twitter',
     'djangocms_file',
     'djangocms_flash',
