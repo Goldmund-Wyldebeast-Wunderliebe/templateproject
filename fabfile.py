@@ -32,6 +32,8 @@ def setup(layer, branch):
     env.branch = branch or deployment_config.branch
     env.host_string = deployment_config.deployhost
     env.homedir = deployment_config.homedir
+    env.gunicorn_port = deployment_config.gunicorn_port
+    env.gunicorn_workers = deployment_config.gunicorn_workers
     env.sitename = deployment_config.sitename
     env.projectdir = deployment_config.projectdir
     env.tag = deployment_config.tag
@@ -60,11 +62,11 @@ def deploy(layer='tst', branch=None):
         if [ -d %(projectdir)s ]
         then
             cd %(projectdir)s
+            git fetch
             git checkout %(branch)s
             git pull
         else
-            git clone --branch=%(branch)s --single-branch \
-                    %(source)s %(projectdir)s
+            git clone --branch=%(branch)s %(source)s %(projectdir)s
             cd %(projectdir)s
             virtualenv .
         fi
@@ -89,19 +91,34 @@ def deploy(layer='tst', branch=None):
     run("""
         cd %(projectdir)s
         . bin/activate
-        python manage.py syncdb --noinput --all
-        python manage.py migrate --fake
+        python manage.py syncdb --noinput
+        python manage.py migrate
         if [ ! -S var/run/supervisord.sock ]
         then supervisord
         else supervisorctl reload
         fi
         """ % env)
 
-    make_conffile('nginx.conf', 'sites-enabled/' + env.sitename)
-    run("sudo /etc/init.d/nginx reload")
+    deployment_templates = os.path.join(
+            os.path.dirname(__file__), 'deployment', 'templates')
+    settings.configure(TEMPLATE_DIRS=(deployment_templates,))
+
+    make_conffile('gunicorn.conf', 'etc/')
+    if env.webserver == 'nginx':
+        make_conffile('nginx.conf', '~/sites-enabled/' + env.sitename)
+        run("sudo /etc/init.d/nginx reload")
+    elif env.webserver == 'apache':
+        make_conffile('apache2.conf', '~/sites-enabled/' + env.sitename)
+        run("sudo /etc/init.d/apache2 reload")
 
 
 def make_conffile(src, tgt):
+    if tgt.endswith('/'):
+        tgt = os.path.join(tgt, os.path.basename(src))
+    if tgt.startswith('~/'):
+        tgt = os.path.join(env.homedir, tgt[2:])
+    else:
+        tgt = os.path.join(env.projectdir, tgt)
     tmpdir = 'tmp'
     deployment_templates = os.path.join(
             os.path.dirname(__file__), 'deployment', 'templates')

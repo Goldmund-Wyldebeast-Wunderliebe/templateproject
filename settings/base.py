@@ -10,25 +10,46 @@ STATIC_URL = '/static/'
 
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': None,
-        'USER': None,
-        'PASSWORD': None,
-        'HOST': None,
-    }
+    'default': None,  # To be filled in in the settings/{dev,tst,acc,prd}.py
 }
 
 def read_pgpass(dbname):
     import os
-    pgpass = os.path.join(os.environ['HOME'], '.pgpass')
-    for line in open(pgpass).read().split():
-        words = line.strip().split(':')
-        if words[2]==dbname:
-            DATABASES['default']['NAME'] = words[2]
-            DATABASES['default']['USER'] = words[3]
-            DATABASES['default']['PASSWORD'] = words[4]
-            DATABASES['default']['HOST'] = words[0]
+    try:
+        pgpass = os.path.join(os.environ['HOME'], '.pgpass')
+        pgpass_lines = open(pgpass).read().split()
+    except IOError:
+        print """
+        You don't have a ~/.pgpass file so we're using a sqlite database.
+        
+        To switch to a PostgreSQL database, create a ~/.pgpass file
+        containing it's credentials.
+        See http://www.postgresql.org/docs/9.3/static/libpq-pgpass.html
+        """
+    else:
+        for line in pgpass_lines:
+            words = line.strip().split(':')
+            if words[2]==dbname:
+                return {
+                    'ENGINE': 'django.db.backends.postgresql_psycopg2',
+                    'NAME': words[2],
+                    'USER': words[3],
+                    'PASSWORD': words[4],
+                    'HOST': words[0],
+                }
+
+        print """
+        Your ~/.pgpass file doesn't have database '%s' so we're using
+        a sqlite database for now.
+        
+        To switch to a PostgreSQL database, add a line to the ~/.pgpass file
+        containing it's credentials.
+        See http://www.postgresql.org/docs/9.3/static/libpq-pgpass.html
+        """
+    return {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'var', 'mysite.db'),
+    }
 
 
 SECURE_SSL_REDIRECT=True

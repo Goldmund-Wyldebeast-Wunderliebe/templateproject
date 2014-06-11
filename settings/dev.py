@@ -6,7 +6,8 @@ TEMPLATE_DEBUG=DEBUG
 SECURE_SSL_REDIRECT=False
 SESSION_COOKIE_SECURE=False
 
-read_pgpass('mysite_dev')
+
+DATABASES = { 'default': read_pgpass('mysite_dev'), }
 
 LOGGING['loggers'] = {
     'django.request': {
