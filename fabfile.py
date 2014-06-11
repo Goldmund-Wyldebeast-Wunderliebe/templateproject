@@ -37,7 +37,6 @@ def setup(layer, branch):
             'webserver', 'serveradmin',
             ]:
         setattr(env, element, getattr(deployment_config, element, None))
-        print 'env.%s = %s' % (element, getattr(env, element))
     env.source = git.Repo().remote().url
 
 
