@@ -1,6 +1,7 @@
 import os
 import sys
 import git
+import tempfile
 
 from fabric.api import env, run, put, task
 from django.conf import settings
@@ -151,7 +152,8 @@ def make_conffile(src, tgt):
         tgt = os.path.join(env.homedir, tgt[2:])
     else:
         tgt = os.path.join(env.projectdir, tgt)
-    tmpdir = 'tmp'
+    tmpdir = tempfile.mkdtemp()
+    print tmpdir
     tmpfile = os.path.join(tmpdir, src)
     d = os.path.dirname(tmpfile)
     if not os.path.isdir(d):
@@ -160,5 +162,7 @@ def make_conffile(src, tgt):
         os.chmod(tmpfile, 0644)
         fh.write(render_to_string(src, env))
     put(tmpfile, tgt)
+    os.unlink(tmpfile)
+    os.removedirs(tmpdir)
 
 
