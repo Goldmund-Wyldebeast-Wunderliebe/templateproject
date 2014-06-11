@@ -27,17 +27,17 @@ def read_pgpass(dbname):
         See http://www.postgresql.org/docs/9.3/static/libpq-pgpass.html
         """
     else:
-        for line in pgpass_lines:
-            words = line.strip().split(':')
-            if words[2] in (dbname, '*'):
-                return {
-                    'ENGINE': 'django.db.backends.postgresql_psycopg2',
-                    'NAME': dbname,
-                    'USER': words[3],
-                    'PASSWORD': words[4],
-                    'HOST': words[0],
-                }
-
+        for match in (dbname, '*'):
+            for line in pgpass_lines:
+                words = line.strip().split(':')
+                if words[2] == match:
+                    return {
+                        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+                        'NAME': dbname,
+                        'USER': words[3],
+                        'PASSWORD': words[4],
+                        'HOST': words[0],
+                    }
         print """
         Your ~/.pgpass file doesn't have database '%s' so we're using
         a sqlite database for now.
