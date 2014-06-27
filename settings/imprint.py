@@ -1,7 +1,7 @@
 import git
 
 
-branch = format(git.Repo().head.ref.name)
+branch = format(git.Repo().active_branch)
 
 SITE_IMPRINT_DEV = 'dev:' + branch
 SITE_IMPRINT_TST = 'tst:' + branch
