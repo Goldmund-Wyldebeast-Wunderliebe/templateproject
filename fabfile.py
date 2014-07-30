@@ -22,6 +22,8 @@ def pick_settings(layer):
     file = 'settings/__init__.py'
     with open(file, 'wb') as fh:
         fh.write('from .%s import *\n' % layer)
+    for vardir in ('log', 'run'):
+        os.makedirs(os.path.join('var', vardir), mode=0700)
 
 # shorthand for fab pick_settings:layer=dev
 @task
