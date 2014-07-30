@@ -5,7 +5,12 @@ from datetime import datetime
 from .config import deploy_config
 
 
-deploy_config.branch = git.Repo().head.ref.name
+head = git.Repo().head
+if head.is_detached:
+    deploy_config.branch = head.object.hexsha
+else:
+    deploy_config.branch = head.ref.name
+
 deploy_config.deployhost = 'app-mysite-tst@localhost'
 deploy_config.homedir = '/opt/APPS/mysite/tst'
 deploy_config.sitename = 'tst-%s.templateproject.nl' % deploy_config.branch
