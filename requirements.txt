@@ -7,7 +7,7 @@ psycopg2
 South
 Pillow
 django-cms
-django-reversion
+django-reversion==1.8
 djangocms-file
 djangocms-flash
 djangocms-googlemap
