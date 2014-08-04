@@ -23,7 +23,9 @@ def pick_settings(layer):
     with open(file, 'wb') as fh:
         fh.write('from .%s import *\n' % layer)
     for vardir in ('log', 'run'):
-        os.makedirs(os.path.join('var', vardir), mode=0700)
+        path = os.path.join('var', vardir)
+        if not os.path.isdir(path):
+            os.makedirs(path, mode=0700)
 
 # shorthand for fab pick_settings:layer=dev
 @task
@@ -115,7 +117,6 @@ def deploy(**kwargs):
         . bin/activate
         pip install -r requirements.txt
         fab pick_settings:layer=%(layer)s
-        mkdir -p var/log var/run
         python manage.py collectstatic --noinput
         """ % env)
 
