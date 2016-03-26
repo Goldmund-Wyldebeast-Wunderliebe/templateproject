@@ -10,6 +10,8 @@ except ImportError:
     LAYER = 'dev'
 
 
+HOME_DIR = os.environ['HOME']
+
 DATABASES = { 'default': read_pgpass('app-%s-%s' % (LABEL, LAYER)), }
 SITE_IMPRINT = '%s: %s' % (LAYER, CURRENT_BRANCH)
 
