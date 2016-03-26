@@ -74,7 +74,7 @@ def deploy(**kwargs):
         with prefix('. venv/bin/activate'):
             run('fab pick_settings:%(label)s,%(layer)s' % env)
             run('python manage.py collectstatic --noinput')
-            run('python manage.py compilemessages')
+            #run('python manage.py compilemessages')
 
     make_conffile('deployment/gunicorn.conf', 'etc/')
     make_conffile('deployment/%(webserver)s.conf' % env, 'etc/')
