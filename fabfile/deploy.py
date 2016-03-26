@@ -59,7 +59,7 @@ def deploy(**kwargs):
         cd %(projectdir)s
         . bin/activate
         pip install -r requirements.txt
-        fab pick_settings:layer=%(layer)s
+        fab pick_settings:%(label)s,%(layer)s
         python manage.py collectstatic --noinput
         """ % env)
 

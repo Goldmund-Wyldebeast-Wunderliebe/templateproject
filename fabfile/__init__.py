@@ -15,7 +15,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 
 
 @task
-def pick_settings(layer, label):
+def pick_settings(label, layer):
     with open('settings/label.py', 'wb') as fh:
         fh.write("LAYER = '%s'\nLABEL = '%s'\n" % (layer, label))
     with open('settings/__init__.py', 'wb') as fh:
@@ -29,5 +29,5 @@ def pick_settings(layer, label):
 # shorthand for fab pick_settings:layer=dev
 @task
 def dev(label='templateproject'):
-    pick_settings('dev', label)
+    pick_settings(label, 'dev')
 
