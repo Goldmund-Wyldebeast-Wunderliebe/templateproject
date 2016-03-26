@@ -4,6 +4,7 @@ GitPython
 gunicorn
 supervisor
 psycopg2
+paramiko
 ipdb
 
 cmsplugin-filer
@@ -16,5 +17,6 @@ django-filer
 django-hvad
 django-reversion
 django-rosetta
+easy-thumbnails
 Pillow
 

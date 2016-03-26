@@ -1,2 +1,0 @@
-LAYER = 'dev'
-LABEL = 'zuurzoet'

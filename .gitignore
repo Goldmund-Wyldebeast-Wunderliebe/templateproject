@@ -3,14 +3,8 @@
 *.pyc
 *.py~
 *.swp
+/settings/label.py
 /settings/__init__.py
-/include/
-/bin/
-/lib/
-/var/
-/man/
-/src/
-/tmp/
-/local/
 /static/
 /media/
+/var/
