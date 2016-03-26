@@ -34,61 +34,90 @@ def deploy(**kwargs):
     setup(**kwargs)
     print("deploying %(branch)s to %(sitename)s" % env)
 
-    run("""
-        if [ -d %(projectdir)s ]
-        then
-            cd %(projectdir)s
-            git fetch
-            git checkout %(branch)s
-            git pull
-        else
-            git clone --branch=%(branch)s %(source)s %(projectdir)s
-            cd %(projectdir)s
-            virtualenv .
-        fi
-        """ % env)
+    if exists('%(projectdir)s' % env):
+        with cd('%(projectdir)s' % env):
+            run('git fetch')
+            run('git checkout %(branch)s' % env)
+            run('git pull')
+    else:
+        run('git clone --branch=%(branch)s %(source)s %(projectdir)s' % env)
+
+    #if env.layer == 'tst':
+    #    run("""
+    #        %(projectdir)s/scripts/dbclone.sh check %(database_name)s || (
+    #            %(projectdir)s/scripts/dbclone.sh make %(database_name)s
+    #        )
+    #    """ % env)
+
+    with cd('%(projectdir)s' % env):
+        run("""
+            hash=`md5sum requirements.txt | cut -d' ' -f1`
+            venvdir=$HOME/virtualenvs/$hash
+            if [ ! -d $venvdir ]
+            then
+                mkdir -p $venvdir
+                virtualenv $venvdir
+                . $venvdir/bin/activate
+                pip install -r requirements.txt
+            fi
+            rm -f venv
+            ln -s $venvdir venv
+            """ % env)
 
     if env.tag:
-        run("""
-            cd %(projectdir)s
-            git tag -f %(tag)s
-            git push origin %(tag)s -f
-            """ % env)
+        with cd('%(projectdir)s' % env):
+            run('git tag -f %(tag)s' % env)
+            run('git push --tags -f' % env)
 
     run("""
         cd %(projectdir)s
         . bin/activate
         pip install -r requirements.txt
-        fab pick_settings:%(label)s,%(layer)s
         python manage.py collectstatic --noinput
         """ % env)
 
-    run("""
-        cd %(projectdir)s
-        . bin/activate
-        python manage.py syncdb --noinput
-        python manage.py migrate
-        if [ ! -S var/run/supervisord.sock ]
-        then supervisord
-        else supervisorctl reload
-        fi
-        """ % env)
+    with cd('%(projectdir)s' % env):
+        with prefix('. venv/bin/activate'):
+            run('fab pick_settings:%(label)s,%(layer)s' % env)
+            run('python manage.py collectstatic --noinput')
+            run('python manage.py compilemessages')
 
-    deployment_templates = os.path.join(
-            os.path.dirname(__file__), 'deployment', 'templates')
-    settings.configure(TEMPLATE_DIRS=(deployment_templates,))
+    make_conffile('deployment/gunicorn.conf', 'etc/')
+    make_conffile('deployment/%(webserver)s.conf' % env, 'etc/')
+    make_conffile('deployment/supervisord.conf', 'etc/')
 
-    make_conffile('gunicorn.conf', 'etc/')
-    make_conffile('nginx.conf', 'etc/')
-    make_conffile('apache2.conf', 'etc/')
+    if env.layer != 'prd':
+        switch(**kwargs)
 
-    if env.webserver in ['nginx', 'apache2']:
-        run("""
-            rm -f %(homedir)s/sites-enabled/%(sitename)s
-            ln -s %(projectdir)s/etc/%(webserver)s.conf \
-                    %(homedir)s/sites-enabled/%(sitename)s
-            sudo /etc/init.d/%(webserver)s reload
-        """ % env)
+
+@task
+def switch(**kwargs):
+    setup(**kwargs)
+    print("switching %(layer)s to %(projectdir)s" % env)
+    # follow current symlink, stop old one
+    if env.layer == 'prd':
+        with cd('current'):
+            with prefix('. venv/bin/activate'):
+                run('supervisorctl shutdown')
+
+    # (re)start new one
+    with cd('%(projectdir)s' % env):
+        with prefix('. venv/bin/activate'):
+            run('python manage.py migrate --noinput')
+            if exists('%(projectdir)s/var/run/supervisord.sock' % env):
+                run('supervisorctl reload')
+            else:
+                run('supervisord')
+            run('rm -f var/stopped')
+
+    # link current to new
+    if env.layer == 'prd':
+        run('rm -f current ; ln -s %(projectdir)s current' % env)
+
+    # reload apache
+    run('ln -fs %(projectdir)s/etc/%(webserver)s.conf %(homedir)s/sites-enabled/%(sitename)s' % env)
+    run('sudo /etc/init.d/%(webserver)s reload' % env)
+
 
 
 def make_conffile(src, tgt):
