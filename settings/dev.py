@@ -1,13 +1,10 @@
 from .base import *
 
 DEBUG = True
-TEMPLATE_DEBUG=DEBUG
 
 SECURE_SSL_REDIRECT=False
 SESSION_COOKIE_SECURE=False
 
-
-DATABASES = { 'default': read_pgpass('mysite_dev'), }
 
 LOGGING['loggers'] = {
     'django.request': {
@@ -27,4 +24,3 @@ LOGGING['loggers'] = {
         },
 }
 
-from .imprint import SITE_IMPRINT_DEV as SITE_IMPRINT

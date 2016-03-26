@@ -1,5 +1,4 @@
 from .base import *
 
-DATABASES = { 'default': read_pgpass('app-mysite-acc'), }
-
-from .imprint import SITE_IMPRINT_ACC as SITE_IMPRINT
+MEDIA_ROOT = os.path.join(HOME_DIR, 'media')
+SITE_IMPRINT = 'acc'

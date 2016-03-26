@@ -1,5 +1,5 @@
 from .base import *
 
-DATABASES = { 'default': read_pgpass('app-mysite-prd'), }
+MEDIA_ROOT = os.path.join(HOME_DIR, 'media')
+SITE_IMPRINT = ''
 
-from .imprint import SITE_IMPRINT_PRD as SITE_IMPRINT
