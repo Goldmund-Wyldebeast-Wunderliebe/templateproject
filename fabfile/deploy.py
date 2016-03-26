@@ -4,7 +4,7 @@ import django
 import os
 import sys
 import git
-import tempfile
+from StringIO import StringIO
 
 from fabric.api import task, env, prefix, cd, run, put
 from fabric.contrib.files import exists
@@ -123,17 +123,6 @@ def make_conffile(src, tgt):
         tgt = os.path.join(env.homedir, tgt[2:])
     else:
         tgt = os.path.join(env.projectdir, tgt)
-    tmpdir = tempfile.mkdtemp()
-    print tmpdir
-    tmpfile = os.path.join(tmpdir, src)
-    d = os.path.dirname(tmpfile)
-    if not os.path.isdir(d):
-        os.makedirs(d)
-    with open(tmpfile, 'wb') as fh:
-        os.chmod(tmpfile, 0644)
-        fh.write(render_to_string(src, env))
-    put(tmpfile, tgt)
-    os.unlink(tmpfile)
-    os.removedirs(tmpdir)
-
+    config_text = render_to_string(src, env)
+    put(local_path=StringIO(config_text), remote_path=tgt)
 
