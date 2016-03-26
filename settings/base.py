@@ -53,6 +53,7 @@ CMS_TEMPLATES = (
 
 
 INSTALLED_APPS = (
+    'deployment',
     'mysite',
     'treebeard',
     'menus',
