@@ -11,7 +11,7 @@ env.shell = '/bin/dash -e -c'
 env.use_ssh_config=True
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
-django.setup()
+#django.setup()
 
 
 @task
