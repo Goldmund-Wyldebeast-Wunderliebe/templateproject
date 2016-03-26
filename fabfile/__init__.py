@@ -1,6 +1,7 @@
 import os
 from fabric.api import env, task
-from .deploy import deploy
+from deployment.fabric.deploy import deploy, switch
+from deployment.fabric.settings import pick_settings
 
 
 env.forward_agent = True
@@ -10,18 +11,6 @@ env.shell = '/bin/dash -e -c'
 env.use_ssh_config=True
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
-
-
-@task
-def pick_settings(label, layer):
-    with open('settings/label.py', 'wb') as fh:
-        fh.write("LAYER = '%s'\nLABEL = '%s'\n" % (layer, label))
-    with open('settings/__init__.py', 'wb') as fh:
-        fh.write('from .%s import *\n' % layer)
-    for vardir in ('log', 'run'):
-        path = os.path.join('var', vardir)
-        if not os.path.isdir(path):
-            os.makedirs(path, mode=0700)
 
 
 # shorthand for fab pick_settings:layer=dev
