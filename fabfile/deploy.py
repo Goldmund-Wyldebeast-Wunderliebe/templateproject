@@ -6,6 +6,7 @@ import git
 import tempfile
 
 from fabric.api import env, run, put, task
+from fabric.contrib.files import exists
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils.importlib import import_module
