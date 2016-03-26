@@ -1,6 +1,5 @@
 import os
 from fabric.api import env, task
-import django
 from .deploy import deploy
 
 
@@ -11,7 +10,6 @@ env.shell = '/bin/dash -e -c'
 env.use_ssh_config=True
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
-#django.setup()
 
 
 @task
