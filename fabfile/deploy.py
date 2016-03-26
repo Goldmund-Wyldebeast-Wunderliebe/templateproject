@@ -15,7 +15,7 @@ from django.utils.importlib import import_module
 
 def setup(**kwargs):
     #sys.path.append(os.getcwd())
-    #django.setup()
+    django.setup()
     module = import_module('labels.%s' % settings.LABEL)
     deploy_config = module.deploy_class(**kwargs)
     env.host_string = deploy_config.deployhost
