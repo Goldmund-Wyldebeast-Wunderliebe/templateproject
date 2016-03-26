@@ -52,7 +52,7 @@ def deploy(**kwargs):
         run("""
             cd %(projectdir)s
             git tag -f %(tag)s
-            git push origin %(tag)s
+            git push origin %(tag)s -f
             """ % env)
 
     run("""
