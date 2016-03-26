@@ -70,13 +70,6 @@ def deploy(**kwargs):
             run('git tag -f %(tag)s' % env)
             run('git push --tags -f' % env)
 
-    run("""
-        cd %(projectdir)s
-        . bin/activate
-        pip install -r requirements.txt
-        python manage.py collectstatic --noinput
-        """ % env)
-
     with cd('%(projectdir)s' % env):
         with prefix('. venv/bin/activate'):
             run('fab pick_settings:%(label)s,%(layer)s' % env)
