@@ -24,7 +24,7 @@ def setup(**kwargs):
             'branch', 'tag', 'sitename',
             'homedir', 'projectdir',
             'gunicorn_port', 'gunicorn_workers',
-            'webserver', 'serveradmin',
+            'webserver', 'ssl', 'serveradmin',
             ]:
         setattr(env, element, getattr(deploy_config, element, None))
         print "%s = %s" % (element, getattr(deploy_config, element, None))
