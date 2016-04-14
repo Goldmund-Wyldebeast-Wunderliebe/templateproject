@@ -5,7 +5,7 @@ gunicorn
 supervisor
 psycopg2
 paramiko
-ipdb
+#ipdb
 
 cmsplugin-filer
 django-ckeditor-updated

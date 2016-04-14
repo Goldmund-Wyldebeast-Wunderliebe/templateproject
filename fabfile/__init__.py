@@ -7,7 +7,7 @@ from deployment.fabric.settings import pick_settings
 env.forward_agent = True
 env.always_use_pty = False
 env.linewise = True
-env.shell = '/bin/dash -e -c'
+env.shell = '/bin/bash -e -c'
 env.use_ssh_config=True
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
