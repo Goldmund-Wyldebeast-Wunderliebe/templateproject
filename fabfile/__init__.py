@@ -5,7 +5,7 @@ from deployment.fabric.settings import pick_settings
 
 
 env.forward_agent = True
-env.always_use_pty = False
+env.always_use_pty = True
 env.linewise = True
 env.shell = '/bin/bash -e -c'
 env.use_ssh_config=True

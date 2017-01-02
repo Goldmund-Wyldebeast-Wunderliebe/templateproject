@@ -112,7 +112,7 @@ def switch(**kwargs):
 
     # reload apache
     run('ln -fs %(projectdir)s/etc/%(webserver)s.conf %(homedir)s/sites-enabled/%(sitename)s' % env)
-    run('sudo /etc/init.d/%(webserver)s reload' % env)
+    run('sudo systemctl reload httpd' % env)
 
 
 
