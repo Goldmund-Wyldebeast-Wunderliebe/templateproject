@@ -1,7 +1,7 @@
 from .core import *
 from .secret import SECRET_KEY
 from .database import read_pgpass
-from .gitbranch import CURRENT_BRANCH
+from .gitbranch import CURRENT_BRANCH, GIT_URL
 
 try:
     from .label import LAYER, LABEL
